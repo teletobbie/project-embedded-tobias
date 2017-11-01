@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <avr/sfr_defs.h>
 #define F_CPU 16E6
 #include <util/delay.h>
@@ -51,11 +52,16 @@ int analogRead(uint8_t pin)
 	// set the analog reference (high two bits of ADMUX) and select the
 	// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
 	// to 0 (the default).
-	ADMUX = (1 << 6) | (pin & 0x07); //OPZOEKEN ADMUX!!! 
-
+	ADMUX = (1 << REFS0) | (pin & 0x07); //OPZOEKEN ADMUX!!! 
+	ADMUX |= (1 << ADLAR);    // Right adjust for 8 bit resolution
+	
+	ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // 128 prescale for 16Mhz
+	ADCSRA |= (1 << ADEN);    // Enable the ADC
+	
 	// start the conversion
-	sbi(ADCSRA, ADSC);
-
+	//sbi(ADCSRA, ADSC);
+	ADCSRA |= (1<<ADSC);
+	
 	// ADSC is cleared when the conversion finishes
 	while (bit_is_set(ADCSRA, ADSC));
 
@@ -65,43 +71,22 @@ int analogRead(uint8_t pin)
 	// as ADCL and ADCH would be locked when it completed.
 	low  = ADCL;
 	high = ADCH;
-
 	// combine the two bytes
 	return (high << 8) | low;
-}
-
-/*
-void setupADC()
-{
-	ADMUX = (1<<REFS0) | (1<<MUX0) | (1<<MUX2);
-	ADCSRA =(1 <<ADEN) | (1<<ADIE) | (1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2)
-	DIDR0 = (1 << ADC5D); //optioneel
 	
-	startConversion();
 }
-void startConversion()
-{
-	ADCSRA |= (1 << ADSC);
-}
-*/
 
 int main(void)
 {
-	//setupADC();
 	uart_init();
 	
-	DDRB = 0xFF; //output
-	DDRC = 0x00; //input
-	
-	uint8_t input = 0; //Jesse
-	uint8_t output = 0;
+	//DDRB = 0xFF; //output
+	//DDRC = 0x00; //input
 	
 	_delay_ms(1000);
 	while (1) {
-		
-		input = analogRead(0);//Jesse
-		
-		float voltage = input * 5.0;
+		int input = analogRead(0);//Jesse
+		float voltage = input *5.0;
 		voltage /= 1024.0;
 		
 		transmit(voltage);//Jesse
