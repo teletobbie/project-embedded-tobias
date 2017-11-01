@@ -1,9 +1,10 @@
 #include <avr/io.h>
 #include <stdlib.h>
 #include <avr/sfr_defs.h>
-//#include <time.h>
 #define F_CPU 16E6
 #include <util/delay.h>
+
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 // output on USB = PD1 = board pin 1
 // datasheet p.190; F_OSC = 16 MHz & baud rate = 19.200
 #define UBBRVAL 51
@@ -41,21 +42,71 @@ uint8_t receive()
 	
 }
 
+int analogRead(uint8_t pin)
+{
+	uint8_t low, high;
 
+	if (pin >= 14) pin -= 14; // allow for channel or pin numbers
+
+	// set the analog reference (high two bits of ADMUX) and select the
+	// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
+	// to 0 (the default).
+	ADMUX = (1 << 6) | (pin & 0x07); //OPZOEKEN ADMUX!!! 
+
+	// start the conversion
+	sbi(ADCSRA, ADSC);
+
+	// ADSC is cleared when the conversion finishes
+	while (bit_is_set(ADCSRA, ADSC));
+
+	// we have to read ADCL first; doing so locks both ADCL
+	// and ADCH until ADCH is read.  reading ADCL second would
+	// cause the results of each conversion to be discarded,
+	// as ADCL and ADCH would be locked when it completed.
+	low  = ADCL;
+	high = ADCH;
+
+	// combine the two bytes
+	return (high << 8) | low;
+}
+
+/*
+void setupADC()
+{
+	ADMUX = (1<<REFS0) | (1<<MUX0) | (1<<MUX2);
+	ADCSRA =(1 <<ADEN) | (1<<ADIE) | (1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2)
+	DIDR0 = (1 << ADC5D); //optioneel
+	
+	startConversion();
+}
+void startConversion()
+{
+	ADCSRA |= (1 << ADSC);
+}
+*/
 
 int main(void)
 {
+	//setupADC();
 	uart_init();
-	DDRB = 0xFF;
-	DDRC = 0x00;
-	uint8_t test = 0; //Jesse
-	uint8_t var1 = 0; //Jesse
+	
+	DDRB = 0xFF; //output
+	DDRC = 0x00; //input
+	
+	uint8_t input = 0; //Jesse
+	uint8_t output = 0;
+	
 	_delay_ms(1000);
 	while (1) {
 		
-		test = PINC0;//Jesse
-		transmit(test);//Jesse
+		input = analogRead(0);//Jesse
+		
+		float voltage = input * 5.0;
+		voltage /= 1024.0;
+		
+		transmit(voltage);//Jesse
 		_delay_ms(1000);//Jesse
+		
 		//transmit(0x33);  _delay_ms(1000);
 		//transmit(0x77);  _delay_ms(1000);
 		//transmit(0xbb);  _delay_ms(1000);
