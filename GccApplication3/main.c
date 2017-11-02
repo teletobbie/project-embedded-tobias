@@ -1,8 +1,11 @@
 #include <avr/io.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <avr/sfr_defs.h>
-#define F_CPU 16E6
+#define F_CPU 16000000UL
+#define BAUD 19200
+#include <util/setbaud.h>
 #include <util/delay.h>
 
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
@@ -14,49 +17,55 @@
 void uart_init()
 {
 	// set the baud rate
-	UBRR0H = 0; //UBRR0H = Baud Rate registers for HIGH (msb)
-	UBRR0L = UBBRVAL; // Baud Rate register for LOW (lsb) set to UBBRVAL = 51
+	UBRR0H = UBRRH_VALUE; //UBRR0H = Baud Rate registers for HIGH (msb)
+	UBRR0L = UBRRL_VALUE;// Baud Rate register for LOW (lsb) set to UBBRVAL = 51
 	// disable U2X mode
-	UCSR0A = 0; //contains status data
-	// enable transmitter by setting the UCsZ02 bit
-	UCSR0B = _BV(RXEN0) | _BV(TXEN0); //TXEN0
+	//UCSR0A = 0; //contains status data
 	// set frame format : asynchronous, 8 data bits, 1 stop bit, no parity
 	UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
+	// enable transmitter by setting the UCsZ02 bit
+	UCSR0B = _BV(RXEN0) | _BV(TXEN0); //TXEN0
+
 	
 	
 }
 
-void transmit(uint8_t data)
-{
-	// wait for an empty transmit buffer
-	// UDRE is set when the transmit buffer is empty
+static int uart_sendchar(char letter, FILE *stream);
+static int uart_readchar(FILE *stream);
+
+FILE uart_output = FDEV_SETUP_STREAM(uart_sendchar, NULL, _FDEV_SETUP_WRITE);
+FILE uart_input = FDEV_SETUP_STREAM(NULL, uart_readchar, _FDEV_SETUP_READ);
+
+FILE uart_io = FDEV_SETUP_STREAM(uart_sendchar, uart_readchar, _FDEV_SETUP_RW);
+
+int uart_sendchar(char letter, FILE *stream) {
+	if (letter == '\n') {
+		uart_sendchar('\r', stream);
+	}
 	loop_until_bit_is_set(UCSR0A, UDRE0);
-	// send the data
-	UDR0 = data;
+	UDR0 = letter;
+	return 0;
 }
 
-uint8_t receive()
-{
-	
-	loop_until_bit_is_set(UCSR0A, RXC0);
+int uart_readchar(FILE *stream) {
+	loop_until_bit_is_set(UCSR0A, RXC0); // Wait until data exists. 
 	return UDR0;
-	
 }
+
+
+
 
 int analogRead(uint8_t pin)
 {
-	uint8_t low, high;
 
+	uint8_t low, high;
 	if (pin >= 14) pin -= 14; // allow for channel or pin numbers
 
 	// set the analog reference (high two bits of ADMUX) and select the
 	// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
 	// to 0 (the default).
 	ADMUX = (1 << REFS0) | (pin & 0x07); //OPZOEKEN ADMUX!!! 
-	ADMUX |= (1 << ADLAR);    // Right adjust for 8 bit resolution
-	
-	ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); // 128 prescale for 16Mhz
-	ADCSRA |= (1 << ADEN);    // Enable the ADC
+	ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)| (1 << ADEN); // 128 prescale for 16Mhz
 	
 	// start the conversion
 	//sbi(ADCSRA, ADSC);
@@ -69,38 +78,33 @@ int analogRead(uint8_t pin)
 	// and ADCH until ADCH is read.  reading ADCL second would
 	// cause the results of each conversion to be discarded,
 	// as ADCL and ADCH would be locked when it completed.
+	// combine the two bytes
 	low  = ADCL;
 	high = ADCH;
-	// combine the two bytes
-	return (high << 8) | low;
 	
+	return (high << 8) | low;
 }
 
 int main(void)
 {
 	uart_init();
-	
-	//DDRB = 0xFF; //output
-	//DDRC = 0x00; //input
+	stdout = &uart_output;
+	stdin  = &uart_input;
 	
 	_delay_ms(1000);
 	while (1) {
-		int input = analogRead(0);//Jesse
-		float voltage = input *5.0;
-		voltage /= 1024.0;
+		int input = analogRead(0);
+		float voltage = input * 5.0;
+		voltage /= 1024;
 		
-		transmit(voltage);//Jesse
-		_delay_ms(1000);//Jesse
+		printf ("input %d\n", input);
+	
+		printf("voltage %f\n", voltage);
 		
-		//transmit(0x33);  _delay_ms(1000);
-		//transmit(0x77);  _delay_ms(1000);
-		//transmit(0xbb);  _delay_ms(1000);
+		double temperature;
+		temperature = (voltage - 0.5) * 100 ;
 		
-		//var1 = receive(); 
-		//if(var1 > 0){
-		//	PORTB = 0xFF;
-		//	 _delay_ms(1000);
-		//}
-		//PORTB = 0;
+		printf("tempratuur %f.1\n", temperature);	
+		_delay_ms(3000);//Jesse
 	}
 }
