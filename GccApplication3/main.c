@@ -55,18 +55,25 @@ int uart_readchar(FILE *stream) {
 
 
 
-int analogRead(uint8_t pin)
+void init_analogRead()
 {
 
-	uint8_t low, high;
-	if (pin >= 14) pin -= 14; // allow for channel or pin numbers
 
 	// set the analog reference (high two bits of ADMUX) and select the
 	// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
 	// to 0 (the default).
-	ADMUX = (1 << REFS0) | (pin & 0x07); //OPZOEKEN ADMUX!!! 
-	ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)| (1 << ADEN); // 128 prescale for 16Mhz
+//OPZOEKEN ADMUX!!! 
+	ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)| (1 << ADEN); // 128 prescale for 16Mhz & enable adc
+}
+uint16_t analogRead(uint8_t pin)
+{
 	
+	_delay_ms(10);
+
+	uint8_t low, high;
+	if (pin >= 14) pin -= 14; // allow for channel or pin numbersuint8_t low, high;
+	
+	ADMUX = (1 << REFS0) | (pin & 0x07);
 	// start the conversion
 	//sbi(ADCSRA, ADSC);
 	ADCSRA |= (1<<ADSC);
@@ -82,7 +89,8 @@ int analogRead(uint8_t pin)
 	low  = ADCL;
 	high = ADCH;
 	
-	return (high << 8) | low;
+	//return (high << 8) | low;
+	return ADC;
 }
 
 int main(void)
@@ -91,8 +99,11 @@ int main(void)
 	stdout = &uart_output;
 	stdin  = &uart_input;
 	
+	init_analogRead();
+	
 	_delay_ms(1000);
 	while (1) {
+		
 		int input = analogRead(0);
 		float voltage = input * 5.0;
 		voltage /= 1024;
@@ -104,7 +115,18 @@ int main(void)
 		double temperature;
 		temperature = (voltage - 0.5) * 100 ;
 		
-		printf("tempratuur %f.1\n", temperature);	
-		_delay_ms(3000);//Jesse
+		printf("tempratuur %.1f\n", temperature);
+	
+		int inputLigth = analogRead(1);
+		float voltageLigth = inputLigth * 5.0;
+		voltageLigth /= 1024;
+		
+		printf("inputLigth %d\n", inputLigth);
+		printf("voltageLigth %f\n", voltageLigth);
+		
+		/*int test = analogRead(5);
+		printf("test %d\n", test);*/
+	
+		_delay_ms(3000);
 	}
 }
