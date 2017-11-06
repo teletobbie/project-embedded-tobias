@@ -8,7 +8,7 @@ values = []
 plt.ion()
 cnt = 0
 
-serialArduino = serial.Serial('COM5', 57600)
+serialArduino = serial.Serial('COM5', 19200)
 
 
 def plotValues():
@@ -30,9 +30,9 @@ while True:
 
     # check if valid value can be casted
     try:
-        valueInInt = int(valueRead)
+        valueInInt = float(valueRead)
         print(valueInInt)
-        if valueInInt <= 1024:
+        if valueInInt > 0:
             if valueInInt >= 0:
                 values.append(valueInInt)
                 values.pop(0)
