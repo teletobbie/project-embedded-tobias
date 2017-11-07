@@ -2,13 +2,7 @@
 import serial
 import matplotlib.pyplot as plt
 from drawnow import *
-import atexit
 
-<<<<<<< HEAD
-serialArduino = serial.Serial('COM5', 9600)
-
-print("serialArduino.isOpen() = " + str(serialArduino.isOpen()))
-=======
 lux_values = []
 temp_values = []
 
@@ -31,16 +25,13 @@ def plotValues():
 for i in range(0, 26):
     lux_values.append(0)
     temp_values.append(0)
->>>>>>> master
+
 
 while True:
     while (serialArduino.inWaiting() == 0):
         pass
-<<<<<<< HEAD
+
     print("readline()")
-    valueRead = serialArduino.readline(1)
-    print(int(valueRead.hex(), 16))
-=======
     valueRead = serialArduino.readline()
 
     # check if valid value can be casted
@@ -73,4 +64,4 @@ while True:
                 print("Invalid! too large")
     except ValueError:
         print("Invalid! cannot cast")
->>>>>>> master
+
