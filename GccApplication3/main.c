@@ -122,6 +122,7 @@ int main(void)
 		
 		printf("L %.1f\n", lux);
 		printf("T %.1f\n", temperature);
+		//printf("voltagePoort1 %.1f\n", voltageLight);
 	
 	
 		_delay_ms(3000);
