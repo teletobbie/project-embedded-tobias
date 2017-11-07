@@ -3,31 +3,31 @@ GccApplication3.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .data         00000020  00800100  0000116a  000011fe  2**0
+  0 .data         00000024  00800100  0000116a  000011fe  2**0
                   CONTENTS, ALLOC, LOAD, DATA
   1 .text         0000116a  00000000  00000000  00000094  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .bss          00000006  00800120  00800120  0000121e  2**0
+  2 .bss          00000006  00800124  00800124  00001222  2**0
                   ALLOC
-  3 .comment      0000005c  00000000  00000000  0000121e  2**0
+  3 .comment      0000005c  00000000  00000000  00001222  2**0
                   CONTENTS, READONLY
-  4 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  0000127c  2**2
+  4 .note.gnu.avr.deviceinfo 00000040  00000000  00000000  00001280  2**2
                   CONTENTS, READONLY
-  5 .debug_aranges 00000048  00000000  00000000  000012bc  2**0
+  5 .debug_aranges 00000048  00000000  00000000  000012c0  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   00000a94  00000000  00000000  00001304  2**0
+  6 .debug_info   00000a94  00000000  00000000  00001308  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 00000833  00000000  00000000  00001d98  2**0
+  7 .debug_abbrev 00000833  00000000  00000000  00001d9c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   000003a2  00000000  00000000  000025cb  2**0
+  8 .debug_line   000003a2  00000000  00000000  000025cf  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000094  00000000  00000000  00002970  2**2
+  9 .debug_frame  00000094  00000000  00000000  00002974  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00000463  00000000  00000000  00002a04  2**0
+ 10 .debug_str    00000463  00000000  00000000  00002a08  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    000001ba  00000000  00000000  00002e67  2**0
+ 11 .debug_loc    000001ba  00000000  00000000  00002e6b  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000038  00000000  00000000  00003021  2**0
+ 12 .debug_ranges 00000038  00000000  00000000  00003025  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -99,13 +99,13 @@ Disassembly of section .text:
      180:	02 c0       	rjmp	.+4      	; 0x186 <__do_copy_data+0x10>
      182:	05 90       	lpm	r0, Z+
      184:	0d 92       	st	X+, r0
-     186:	a0 32       	cpi	r26, 0x20	; 32
+     186:	a4 32       	cpi	r26, 0x24	; 36
      188:	b1 07       	cpc	r27, r17
      18a:	d9 f7       	brne	.-10     	; 0x182 <__do_copy_data+0xc>
 
 0000018c <__do_clear_bss>:
      18c:	21 e0       	ldi	r18, 0x01	; 1
-     18e:	a0 e2       	ldi	r26, 0x20	; 32
+     18e:	a4 e2       	ldi	r26, 0x24	; 36
      190:	b1 e0       	ldi	r27, 0x01	; 1
      192:	01 c0       	rjmp	.+2      	; 0x196 <.do_clear_bss_start>
 
@@ -113,7 +113,7 @@ Disassembly of section .text:
      194:	1d 92       	st	X+, r1
 
 00000196 <.do_clear_bss_start>:
-     196:	a6 32       	cpi	r26, 0x26	; 38
+     196:	aa 32       	cpi	r26, 0x2A	; 42
      198:	b2 07       	cpc	r27, r18
      19a:	e1 f7       	brne	.-8      	; 0x194 <.do_clear_bss_loop>
      19c:	0e 94 1e 01 	call	0x23c	; 0x23c <main>
@@ -272,7 +272,7 @@ int main(void)
 	uart_init();
      23c:	0e 94 ef 00 	call	0x1de	; 0x1de <uart_init>
 	stdout = &uart_output;
-     240:	e0 e2       	ldi	r30, 0x20	; 32
+     240:	e4 e2       	ldi	r30, 0x24	; 36
      242:	f1 e0       	ldi	r31, 0x01	; 1
      244:	8e e0       	ldi	r24, 0x0E	; 14
      246:	91 e0       	ldi	r25, 0x01	; 1
@@ -295,12 +295,12 @@ int main(void)
      264:	e1 f7       	brne	.-8      	; 0x25e <main+0x22>
      266:	00 c0       	rjmp	.+0      	; 0x268 <main+0x2c>
      268:	00 00       	nop
+		float voltageLight = inputLigth * 5.0;
 		voltageLight /= 1024;
 		float rldr = (10*voltageLight)/(5-voltageLight);
 		float lux = 500/rldr;
 		
-		//printf(inputLigth);
-		printf("%f\n", lux);
+		printf("L %.1f\n", lux);
      26a:	cc e1       	ldi	r28, 0x1C	; 28
      26c:	d1 e0       	ldi	r29, 0x01	; 1
 	init_analogRead();
@@ -341,8 +341,7 @@ int main(void)
 		float rldr = (10*voltageLight)/(5-voltageLight);
 		float lux = 500/rldr;
 		
-		//printf(inputLigth);
-		printf("%f\n", lux);
+		printf("L %.1f\n", lux);
      2a2:	20 e0       	ldi	r18, 0x00	; 0
      2a4:	30 e0       	ldi	r19, 0x00	; 0
      2a6:	40 e2       	ldi	r20, 0x20	; 32
@@ -2121,8 +2120,8 @@ int main(void)
     1092:	61 91       	ld	r22, Z+
     1094:	71 91       	ld	r23, Z+
     1096:	af 01       	movw	r20, r30
-    1098:	80 91 22 01 	lds	r24, 0x0122	; 0x800122 <__data_end+0x2>
-    109c:	90 91 23 01 	lds	r25, 0x0123	; 0x800123 <__data_end+0x3>
+    1098:	80 91 26 01 	lds	r24, 0x0126	; 0x800126 <__data_end+0x2>
+    109c:	90 91 27 01 	lds	r25, 0x0127	; 0x800127 <__data_end+0x3>
     10a0:	0e 94 61 03 	call	0x6c2	; 0x6c2 <vfprintf>
     10a4:	e2 e0       	ldi	r30, 0x02	; 2
     10a6:	0c 94 0a 07 	jmp	0xe14	; 0xe14 <__epilogue_restores__+0x20>

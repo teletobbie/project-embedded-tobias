@@ -13,6 +13,10 @@
 // datasheet p.190; F_OSC = 16 MHz & baud rate = 19.200
 #define UBBRVAL 51
 
+//red: 5v
+//gray: gnd
+//yellow: A1
+
 
 void uart_init()
 {
@@ -123,11 +127,8 @@ int main(void)
 		float rldr = (10*voltageLight)/(5-voltageLight);
 		float lux = 500/rldr;
 		
-		//printf(inputLigth);
-		printf("%f\n", lux);
-		
-		/*int test = analogRead(5);
-		printf("test %d\n", test);*/
+		printf("L %.1f\n", lux);
+	
 	
 		_delay_ms(3000);
 	}

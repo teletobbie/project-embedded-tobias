@@ -18,7 +18,6 @@ def plotValues():
     plt.plot(values, 'rx-', label='values')
     plt.legend(loc='upper right')
 
-
 # pre-load dummy data
 for i in range(0, 26):
     values.append(0)
@@ -30,16 +29,34 @@ while True:
 
     # check if valid value can be casted
     try:
-        valueInInt = float(valueRead)
-        print(valueInInt)
-        if valueInInt > 0:
-            if valueInInt >= 0:
-                values.append(valueInInt)
-                values.pop(0)
-                drawnow(plotValues)
+        valueRead = valueRead.split()
+        print(valueRead[0])
+        if valueRead[0] == 'L':
+            valueInInt = float(valueRead[1])
+            print(valueInInt)
+            if valueInInt > 0:
+                if valueInInt >= 0:
+                    values.append(valueInInt)
+                    values.pop(0)
+                    plt.title("Value from light")
+                    drawnow(plotValues)
+                else:
+                    print("Invalid! negative number")
             else:
-                print("Invalid! negative number")
-        else:
-            print("Invalid! too large")
+                print("Invalid! too large")
+        if valueRead[0] == "T":
+            valueInInt = float(valueRead[1])
+            print(valueInInt)
+            if valueInInt > 0:
+                if valueInInt >= 0:
+                    values.append(valueInInt)
+                    values.pop(0)
+                    plt.title("Value from temperature")
+                    drawnow(plotValues)
+                else:
+                    print("Invalid! negative number")
+            else:
+                print("Invalid! too large")
+
     except ValueError:
         print("Invalid! cannot cast")

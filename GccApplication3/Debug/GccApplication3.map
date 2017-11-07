@@ -542,7 +542,7 @@ END GROUP
  *(.fini0)
                 0x0000116a                _etext = .
 
-.data           0x00800100       0x20 load address 0x0000116a
+.data           0x00800100       0x24 load address 0x0000116a
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -555,28 +555,28 @@ END GROUP
  *(.rodata)
  *(.rodata*)
  .rodata.str1.1
-                0x0080011c        0x4 main.o
+                0x0080011c        0x8 main.o
  *(.gnu.linkonce.d*)
-                0x00800120                . = ALIGN (0x2)
-                0x00800120                _edata = .
-                0x00800120                PROVIDE (__data_end, .)
+                0x00800124                . = ALIGN (0x2)
+                0x00800124                _edata = .
+                0x00800124                PROVIDE (__data_end, .)
 
-.bss            0x00800120        0x6
-                0x00800120                PROVIDE (__bss_start, .)
+.bss            0x00800124        0x6
+                0x00800124                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
  *(COMMON)
- COMMON         0x00800120        0x6 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(iob.o)
-                0x00800120                __iob
-                0x00800126                PROVIDE (__bss_end, .)
+ COMMON         0x00800124        0x6 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr5\libc.a(iob.o)
+                0x00800124                __iob
+                0x0080012a                PROVIDE (__bss_end, .)
                 0x0000116a                __data_load_start = LOADADDR (.data)
-                0x0000118a                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x0000118e                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x00800126        0x0
+.noinit         0x0080012a        0x0
                 [!provide]                PROVIDE (__noinit_start, .)
  *(.noinit*)
                 [!provide]                PROVIDE (__noinit_end, .)
-                0x00800126                _end = .
+                0x0080012a                _end = .
                 [!provide]                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
