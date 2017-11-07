@@ -121,9 +121,10 @@ int main(void)
 		
 		//printf("tempratuur %.1f\n", temperature);
 	
-		int inputLigth = analogRead(1);
-		float voltageLight = inputLigth * 5.0;
+		int inputLight = analogRead(1);
+		float voltageLight = inputLight * 5.0;
 		voltageLight /= 1024;
+		
 		float rldr = (10*voltageLight)/(5-voltageLight);
 		float lux = 500/rldr;
 		

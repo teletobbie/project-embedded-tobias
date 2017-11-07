@@ -23,11 +23,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   9 .debug_frame  00000094  00000000  00000000  00002974  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00000463  00000000  00000000  00002a08  2**0
+ 10 .debug_str    00000471  00000000  00000000  00002a08  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    000001ba  00000000  00000000  00002e6b  2**0
+ 11 .debug_loc    000001ba  00000000  00000000  00002e79  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000038  00000000  00000000  00003025  2**0
+ 12 .debug_ranges 00000038  00000000  00000000  00003033  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -295,8 +295,8 @@ int main(void)
      264:	e1 f7       	brne	.-8      	; 0x25e <main+0x22>
      266:	00 c0       	rjmp	.+0      	; 0x268 <main+0x2c>
      268:	00 00       	nop
-		float voltageLight = inputLigth * 5.0;
 		voltageLight /= 1024;
+		
 		float rldr = (10*voltageLight)/(5-voltageLight);
 		float lux = 500/rldr;
 		
@@ -316,10 +316,10 @@ int main(void)
 		
 		//printf("tempratuur %.1f\n", temperature);
 	
-		int inputLigth = analogRead(1);
+		int inputLight = analogRead(1);
      274:	81 e0       	ldi	r24, 0x01	; 1
      276:	0e 94 01 01 	call	0x202	; 0x202 <analogRead>
-		float voltageLight = inputLigth * 5.0;
+		float voltageLight = inputLight * 5.0;
      27a:	bc 01       	movw	r22, r24
      27c:	99 0f       	add	r25, r25
      27e:	88 0b       	sbc	r24, r24
@@ -338,6 +338,7 @@ int main(void)
      29a:	0e 94 f4 02 	call	0x5e8	; 0x5e8 <__mulsf3>
      29e:	6b 01       	movw	r12, r22
      2a0:	7c 01       	movw	r14, r24
+		
 		float rldr = (10*voltageLight)/(5-voltageLight);
 		float lux = 500/rldr;
 		
