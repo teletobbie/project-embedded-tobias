@@ -112,15 +112,8 @@ int main(void)
 		float voltage = input * 5.0;
 		voltage /= 1024;
 		
-		//printf ("input %d\n", input);
-	
-		//printf("voltage %f\n", voltage);
-		
-		double temperature;
+		float temperature;
 		temperature = (voltage - 0.5) * 100 ;
-		
-		//printf("tempratuur %.1f\n", temperature);
-	
 		int inputLigth = analogRead(1);
 		float voltageLight = inputLigth * 5.0;
 		voltageLight /= 1024;
@@ -128,6 +121,7 @@ int main(void)
 		float lux = 500/rldr;
 		
 		printf("L %.1f\n", lux);
+		printf("T %.1f\n", temperature);
 	
 	
 		_delay_ms(3000);

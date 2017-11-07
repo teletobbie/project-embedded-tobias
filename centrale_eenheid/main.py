@@ -31,7 +31,7 @@ while True:
     try:
         valueRead = valueRead.split()
         print(valueRead[0])
-        if valueRead[0] == 'L':
+        if 'L' in valueRead[0].decode("utf-8"):
             valueInInt = float(valueRead[1])
             print(valueInInt)
             if valueInInt > 0:
@@ -44,7 +44,7 @@ while True:
                     print("Invalid! negative number")
             else:
                 print("Invalid! too large")
-        if valueRead[0] == "T":
+        if 'T' in  valueRead[0].decode("utf-8"):
             valueInInt = float(valueRead[1])
             print(valueInInt)
             if valueInInt > 0:
