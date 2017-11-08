@@ -52,7 +52,7 @@ int uart_sendchar(char letter, FILE *stream) {
 }
 
 int uart_readchar(FILE *stream) {
-	loop_until_bit_is_set(UCSR0A, RXC0); // Wait until data exists. 
+	loop_until_bit_is_set(UCSR0A, RXC0); // Wait until data exists.
 	return UDR0;
 }
 
@@ -66,7 +66,7 @@ void init_analogRead()
 	// set the analog reference (high two bits of ADMUX) and select the
 	// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
 	// to 0 (the default).
-//OPZOEKEN ADMUX!!! 
+	//OPZOEKEN ADMUX!!!
 	ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)| (1 << ADEN); // 128 prescale for 16Mhz & enable adc
 }
 uint16_t analogRead(uint8_t pin)
@@ -108,29 +108,37 @@ int main(void)
 	_delay_ms(1000);
 	while (1) {
 		
+		DDRD = 0xFF;
+		
 		int input = analogRead(0);
 		float voltage = input * 5.0;
 		voltage /= 1024;
 		
-		//printf ("input %d\n", input);
-	
-		//printf("voltage %f\n", voltage);
-		
-		double temperature;
+		float temperature;
 		temperature = (voltage - 0.5) * 100 ;
-		
-		//printf("tempratuur %.1f\n", temperature);
-	
 		int inputLight = analogRead(1);
 		float voltageLight = inputLight * 5.0;
 		voltageLight /= 1024;
-		
 		float rldr = (10*voltageLight)/(5-voltageLight);
 		float lux = 500/rldr;
 		
 		printf("L %.1f\n", lux);
-	
-	
+		printf("T %.1f\n", temperature);
+		//printf("voltagePoort1 %.1f\n", voltageLight);
+		
+		
+		
+		if(lux > 500.0){
+			PORTD = 0xFF;
+		}
+		else if(temperature > 21.0){
+			PORTD = 0xFF;
+		}
+		else{
+			PORTD = 0x00;
+		}
+		
+		
 		_delay_ms(3000);
 	}
 }
