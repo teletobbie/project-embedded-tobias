@@ -1,31 +1,40 @@
+#blue = v5
+#gray = gnd
+#black = gnd
+#white = a0
+#yellow = a1
+
 #https://arduino-er.blogspot.nl/2015/04/python-to-plot-graph-of-serial-data.html
 import serial
 import matplotlib.pyplot as plt
 from drawnow import *
+import numpy as np
+from matplotlib.widgets import Slider
 
 lux_values = []
 temp_values = []
-
 plt.ion()
-cnt = 0
-
 serialArduino = serial.Serial('COM5', 19200)
 
 def plotValues():
+    x_lux = np.array([])
     plt.title("Values from light and temperature")
     plt.grid(True)
-    plt.ylabel('Values')
     plt.subplot(211)
+    plt.subplot(211).set_xlabel('Lichtintensiteit in Lux')
     plt.plot(lux_values, 'rx-', label='values')
     plt.subplot(212)
+    plt.subplot(212).set_xlabel('Temperatuur in °C')
     plt.plot(temp_values, 'rx-', label='values')
-    plt.show()
+    plt.subplots_adjust(hspace=.4)
+    
+
+
 
 # pre-load dummy data
 for i in range(0, 26):
     lux_values.append(0)
     temp_values.append(0)
-
 
 while True:
     while (serialArduino.inWaiting() == 0):
