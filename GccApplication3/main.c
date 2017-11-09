@@ -55,10 +55,6 @@ int uart_readchar(FILE *stream) {
 	loop_until_bit_is_set(UCSR0A, RXC0); // Wait until data exists.
 	return UDR0;
 }
-
-
-
-
 void init_analogRead()
 {
 
@@ -97,6 +93,23 @@ uint16_t analogRead(uint8_t pin)
 	//return (high << 8) | low;
 	return ADC;
 }
+float read_temp(int in){
+		int input = in;
+		float voltage = input * 5.0;
+		voltage /= 1024;
+			
+		float temperature;
+		temperature = (voltage - 0.5) * 100 ;
+		return temperature;
+}
+float read_lux(int in){
+	int input = in;
+	float voltageLight = input * 5.0;
+	voltageLight /= 1024;
+	float rldr = (10*voltageLight)/(5-voltageLight);
+	float lux = 500/rldr;
+	return lux;
+}
 
 int main(void)
 {
@@ -115,30 +128,18 @@ int main(void)
 		
 		DDRD = 0xFF;
 		
-		int input = analogRead(0);
-		float voltage = input * 5.0;
-		voltage /= 1024;
-		
-		float temperature;
-		temperature = (voltage - 0.5) * 100 ;
-		int inputLight = analogRead(1);
-		float voltageLight = inputLight * 5.0;
-		voltageLight /= 1024;
-		float rldr = (10*voltageLight)/(5-voltageLight);
-		float lux = 500/rldr;
+		float temperature = read_temp(analogRead(0));
+		float lux = analogRead(1);
 		
 		printf("L %.1f\n", lux);
 		printf("T %.1f\n", temperature);
-		//printf("voltagePoort1 %.1f\n", voltageLight);
 		
-		
-		if(temperature > rollout_temp || lux > rollout_light){
+		if((temperature > rollout_temp) || (lux > rollout_light)){
 			PORTD = 0xFF;
 		}
 		else{
 			PORTD = 0x00;
 		}
-		
 		
 		_delay_ms(3000);
 	}
