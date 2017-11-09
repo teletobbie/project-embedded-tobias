@@ -8,17 +8,28 @@
 import serial
 import matplotlib.pyplot as plt
 from drawnow import *
-import numpy as np
-from matplotlib.widgets import Slider
+from matplotlib.widgets import Button
 
 lux_values = []
 temp_values = []
+current_temp = 20
 plt.ion()
+
 serialArduino = serial.Serial('COM5', 19200)
 
+class Index(object):
+    def __init__(self, temp):
+        self.current_temp = temp
+    def max(self, event):
+        self.current_temp += 1
+    def min(self, event):
+        self.current_temp -= 1
+    def getTemp(self):
+        return str(self.current_temp)
+
 def plotValues():
-    x_lux = np.array([])
-    plt.title("Values from light and temperature")
+    callback = Index(current_temp)
+    plt.suptitle('Waarde van licht en temperatuur')
     plt.grid(True)
     plt.subplot(211)
     plt.subplot(211).set_xlabel('Lichtintensiteit in Lux')
@@ -26,10 +37,14 @@ def plotValues():
     plt.subplot(212)
     plt.subplot(212).set_xlabel('Temperatuur in °C')
     plt.plot(temp_values, 'rx-', label='values')
-    plt.subplots_adjust(hspace=.4)
-    
-
-
+    plt.subplots_adjust(hspace=.5)
+    axButtonMin = plt.axes([0.7, 0.01, 0.1, 0.050])
+    axButtonMax = plt.axes([0.88, 0.01, 0.1, 0.050])
+    buttonMin = Button(axButtonMin, 'Min')
+    buttonMin.on_clicked(callback.min)
+    buttonMax = Button(axButtonMax, 'Max')
+    buttonMax.on_clicked(callback.max)
+    plt.gcf().text(0.83, 0.025, str(callback.getTemp), fontsize=10)
 
 # pre-load dummy data
 for i in range(0, 26):
@@ -39,38 +54,21 @@ for i in range(0, 26):
 while True:
     while (serialArduino.inWaiting() == 0):
         pass
-
     print("readline()")
     valueRead = serialArduino.readline()
-
     # check if valid value can be casted
     try:
         valueRead = valueRead.split()
-        print(valueRead[0])
-        if 'L' in valueRead[0].decode("utf-8"): #lux
-            valueInInt = float(valueRead[1])
-            print(valueInInt)
-            if valueInInt > 0:
-                if valueInInt >= 0:
-                    lux_values.append(valueInInt)
-                    lux_values.pop(0)
-                    drawnow(plotValues)
-                else:
-                    print("Invalid! negative number")
-            else:
-                print("Invalid! too large")
-        if 'T' in  valueRead[0].decode("utf-8"): #temp
-            valueInInt = float(valueRead[1])
-            print(valueInInt)
-            if valueInInt > 0:
-                if valueInInt >= 0:
-                    temp_values.append(valueInInt)
-                    temp_values.pop(0)
-                    drawnow(plotValues)
-                else:
-                    print("Invalid! negative number")
-            else:
-                print("Invalid! too large")
+        if 'L' in valueRead[0].decode("utf-8"):
+            luxValueInFloat = float(valueRead[1])
+            if luxValueInFloat >= 0:
+                lux_values.append(luxValueInFloat)
+                lux_values.pop(0)
+        if 'T' in valueRead[0].decode("utf-8"):
+            tempValueInFloat = float(valueRead[1])
+            if tempValueInFloat >= 0:
+                temp_values.append(tempValueInFloat)
+                temp_values.pop(0)
+        drawnow(plotValues)
     except ValueError:
         print("Invalid! cannot cast")
-
