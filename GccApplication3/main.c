@@ -16,6 +16,9 @@
 // The array of tasks
 sTask SCH_tasks_G[SCH_MAX_TASKS];
 
+volatile uint16_t gv_counter = 0; // 16 bit counter value
+volatile uint8_t gv_echo = 0; // a flag
+
 
 /*------------------------------------------------------------------*-
 
@@ -222,11 +225,6 @@ ISR(TIMER2_COMPA_vect)
    }
 }
 
-//red: 5v
-//gray: gnd
-//yellow: A1
-
-
 void uart_init()
 {
 	// set the baud rate
@@ -285,6 +283,50 @@ uint16_t analogRead(uint8_t pin)
 	
 	return ADC;
 }
+
+
+void init_timer()
+{
+	TCCR1A = 0;
+	TCCR1B = 0;
+}
+
+void init_ext_int()
+{
+	// any change triggers ext interrupt 1
+	EICRA = (1 << ISC10);
+	EIMSK = (1 << INT1);
+}
+
+void init_ultrasoon(void)
+{
+	DDRD |= _BV(DDB0);
+	DDRD &= ~_BV(DDB3);
+	
+	init_timer();
+	init_ext_int();
+}
+
+void trigger_ultrasoon(void)
+{
+	PORTD|=(1<<PIND0);
+	_delay_ms(10);
+	PORTD &= ~(1<<PIND0);
+}
+
+void get_distance()
+{
+	trigger_ultrasoon();
+	
+	printf("counter %u \n", gv_counter);
+	
+	uint16_t distance = (gv_counter*0.5)/58;
+
+	printf("distance %ucm \n", distance);
+}
+
+
+
 float send_temp(void){
 		int input = analogRead(0);
 		float voltage = input * 5.0;
@@ -332,12 +374,15 @@ int main(void)
 	uart_init();
 	stdout = &uart_output;
 	stdin  = &uart_input;
+
+	init_ultrasoon();
 	
 	init_analogRead();
 	SCH_Init_T2();
 	
 	SCH_Add_Task(send_lux, 1000, 10000);
 	SCH_Add_Task(send_temp, 1000, 5000);
+	SCH_Add_Task(get_distance, 1000, 5000);
 	SCH_Start();
 	
 	//SCH_Add_Task(read_lux, 1000, 1000);
@@ -345,18 +390,35 @@ int main(void)
 	//_delay_ms(1000);
 	while (1) {
 		
-		DDRD = 0xFF;
+		//DDRD = 0xFF;
 		SCH_Dispatch_Tasks();
 		
 		float temperature = get_temp(analogRead(0));
 		float lux = get_lux(analogRead(1));
 				
 		if((temperature > rollout_temp) || (lux > rollout_light)){
-			PORTD = 0xFF;
+			//PORTD = 0xFF;
 		}
+		
 		else{
-			PORTD = 0x00;
+			//PORTD = 0x00;
 		}
 		//_delay_ms(3000);
+	}
+}
+
+ISR(INT1_vect)
+{
+	if (gv_echo==1)
+	{
+		TCCR1B=0;
+		gv_counter=TCNT1;
+		TCNT1=0;
+		gv_echo=0;
+	}
+	if (gv_echo==0)
+	{
+		TCCR1B|=(1<<CS11);
+		gv_echo=1;
 	}
 }
