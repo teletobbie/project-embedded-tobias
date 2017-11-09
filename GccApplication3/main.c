@@ -11,7 +11,8 @@
 #include "AVR_TTC_scheduler.h"
 #include <avr/interrupt.h>
 
-
+static	float rollout_temp = 21.5;
+static	float rollout_light = 500;
 
 // The array of tasks
 sTask SCH_tasks_G[SCH_MAX_TASKS];
@@ -285,6 +286,8 @@ uint16_t analogRead(uint8_t pin)
 	
 	return ADC;
 }
+
+
 float send_temp(void){
 		int input = analogRead(0);
 		float voltage = input * 5.0;
@@ -304,6 +307,7 @@ float send_lux(void){
 	float rldr = (10*voltageLight)/(5-voltageLight);
 	float lux = 500/rldr;
 	printf("L %.1f\n", lux);
+	
 }
 float get_lux(int in){
 		int input = in;
@@ -325,10 +329,29 @@ float get_temp(int in){
 			temperature = (voltage - 0.5) * 100 ;
 			return temperature;
 }
+
+void check_rollout()
+{
+	float temperature = get_temp(analogRead(0));
+	float lux = get_lux(analogRead(1));
+	if((temperature > rollout_temp) || (lux > rollout_light)){
+		PORTB = 0xFF;
+	}
+	else{
+		PORTB = 0x00;
+	}
+}
+void rollout(){
+	PORTB = 0xFF;
+}
+void rollin(){
+	PORTB = 0x00;
+}
+
 int main(void)
 {
-	float rollout_temp = 21.5;
-	float rollout_light = 500;
+	DDRB = 0xFF;
+	
 	uart_init();
 	stdout = &uart_output;
 	stdin  = &uart_input;
@@ -338,25 +361,10 @@ int main(void)
 	
 	SCH_Add_Task(send_lux, 1000, 10000);
 	SCH_Add_Task(send_temp, 1000, 5000);
+	SCH_Add_Task(check_rollout, 1000, 1000);
 	SCH_Start();
 	
-	//SCH_Add_Task(read_lux, 1000, 1000);
-	
-	//_delay_ms(1000);
 	while (1) {
-		
-		DDRD = 0xFF;
-		SCH_Dispatch_Tasks();
-		
-		float temperature = get_temp(analogRead(0));
-		float lux = get_lux(analogRead(1));
-				
-		if((temperature > rollout_temp) || (lux > rollout_light)){
-			PORTD = 0xFF;
-		}
-		else{
-			PORTD = 0x00;
-		}
-		//_delay_ms(3000);
+		SCH_Dispatch_Tasks();		
 	}
 }
