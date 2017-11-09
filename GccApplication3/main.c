@@ -332,7 +332,7 @@ float get_temp(int in){
 
 void check_rollout()
 {
-	float temperature = get_temp(analogRead(0));;
+	float temperature = get_temp(analogRead(0));
 	float lux = get_lux(analogRead(1));
 	if((temperature > rollout_temp) || (lux > rollout_light)){
 		PORTB = 0xFF;

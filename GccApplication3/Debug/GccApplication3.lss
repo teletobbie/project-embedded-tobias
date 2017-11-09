@@ -15,19 +15,19 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   5 .debug_aranges 000000b0  00000000  00000000  00001648  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   00000e59  00000000  00000000  000016f8  2**0
+  6 .debug_info   00000e63  00000000  00000000  000016f8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 00000968  00000000  00000000  00002551  2**0
+  7 .debug_abbrev 00000968  00000000  00000000  0000255b  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   00000616  00000000  00000000  00002eb9  2**0
+  8 .debug_line   00000616  00000000  00000000  00002ec3  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000260  00000000  00000000  000034d0  2**2
+  9 .debug_frame  00000260  00000000  00000000  000034dc  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    0000056e  00000000  00000000  00003730  2**0
+ 10 .debug_str    0000056e  00000000  00000000  0000373c  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00000840  00000000  00000000  00003c9e  2**0
+ 11 .debug_loc    00000840  00000000  00000000  00003caa  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000000a0  00000000  00000000  000044de  2**0
+ 12 .debug_ranges 000000a0  00000000  00000000  000044ea  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -617,7 +617,7 @@ void rollin(){
      59c:	5c 01       	movw	r10, r24
      59e:	20 e0       	ldi	r18, 0x00	; 0
      5a0:	30 e0       	ldi	r19, 0x00	; 0
-     5a2:	40 ef       	ldi	r20, 0xF0	; 240
+     5a2:	4c ea       	ldi	r20, 0xAC	; 172
      5a4:	51 e4       	ldi	r21, 0x41	; 65
      5a6:	c7 01       	movw	r24, r14
      5a8:	b6 01       	movw	r22, r12
