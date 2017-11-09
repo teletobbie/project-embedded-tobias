@@ -8,14 +8,15 @@
 #include <util/setbaud.h>
 #include <util/delay.h>
 
+#include "AVR_TTC_scheduler.h"
+#include <avr/interrupt.h>
+
 #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 // output on USB = PD1 = board pin 1
 // datasheet p.190; F_OSC = 16 MHz & baud rate = 19.200
 #define UBBRVAL 51
 
-#include "AVR_TTC_scheduler.h"
-#include <avr/io.h>
-#include <avr/interrupt.h>
+
 
 // The array of tasks
 sTask SCH_tasks_G[SCH_MAX_TASKS];
@@ -156,7 +157,7 @@ unsigned char SCH_Delete_Task(const unsigned char TASK_INDEX)
   You must call this function before using the scheduler.  
 
 -*------------------------------------------------------------------*/
-void SCH_Init_T1(void)
+void SCH_Init_T2(void)
 {
    unsigned char i;
 
@@ -169,9 +170,9 @@ void SCH_Init_T1(void)
    // Values for 1ms and 10ms ticks are provided for various crystals
 
    // Hier moet de timer periode worden aangepast ....!
-   OCR1A = (uint16_t)625;   		     // 10ms = (256/16.000.000) * 625
-   TCCR1B = (1 << CS12) | (1 << WGM12);  // prescale op 64, top counter = value OCR1A (CTC mode)
-   TIMSK1 = 1 << OCIE1A;   		     // Timer 1 Output Compare A Match Interrupt Enable
+   OCR2A = (uint8_t)625;   		     // 10ms = (256/16.000.000) * 625
+   TCCR2B = (1 << CS12) | (1 << WGM12);  // prescale op 64, top counter = value OCR1A (CTC mode)
+   TIMSK2 = 1 << OCIE2A;   		     // Timer 1 Output Compare A Match Interrupt Enable
 }
 /*------------------------------------------------------------------*-
 
@@ -197,7 +198,7 @@ void SCH_Start(void)
   determined by the timer settings in SCH_Init_T1().
 
 -*------------------------------------------------------------------*/
-ISR(TIMER1_COMPA_vect)
+ISR(TIMER2_COMPA_vect)
 {
    unsigned char Index;
    for(Index = 0; Index < SCH_MAX_TASKS; Index++)
@@ -306,69 +307,78 @@ uint16_t analogRead(uint8_t pin)
 	//return (high << 8) | low;
 	return ADC;
 }
-float read_temp(int in){
-		int input = in;
+float send_temp(void){
+		int input = analogRead(0);
 		float voltage = input * 5.0;
 		voltage /= 1024;
 			
 		float temperature;
 		temperature = (voltage - 0.5) * 100 ;
-		return temperature;
+		printf("T %.1f\n", temperature);
 }
-float read_lux(int in){
-	int input = in;
+float send_lux(void){
+	
+	int input = analogRead(1);
+	
 	float voltageLight = input * 5.0;
 	voltageLight /= 1024;
+	
 	float rldr = (10*voltageLight)/(5-voltageLight);
 	float lux = 500/rldr;
-	return lux;
+	printf("L %.1f\n", lux);
+}
+float get_lux(int in){
+		int input = in;
+		
+		float voltageLight = input * 5.0;
+		voltageLight /= 1024;
+		
+		float rldr = (10*voltageLight)/(5-voltageLight);
+		float lux = 500/rldr;
+		return lux;
+}
+
+float get_temp(int in){
+			int input = in;
+			float voltage = input * 5.0;
+			voltage /= 1024;
+			
+			float temperature;
+			temperature = (voltage - 0.5) * 100 ;
+			return temperature;
 }
 int main(void)
 {
-	
 	float rollout_temp = 21.5;
 	float rollout_light = 500;
-	
 	uart_init();
 	stdout = &uart_output;
 	stdin  = &uart_input;
 	
 	init_analogRead();
+	SCH_Init_T2();
 	
-	_delay_ms(1000);
+	SCH_Add_Task(send_lux, 1000, 10000);
+	SCH_Add_Task(send_temp, 1000, 5000);
+	SCH_Start();
+	
+	//SCH_Add_Task(read_lux, 1000, 1000);
+	
+	//_delay_ms(1000);
 	while (1) {
 		
 		DDRD = 0xFF;
+		SCH_Dispatch_Tasks();
 		
-<<<<<<< HEAD
-		float temperature;
-		temperature = (voltage - 0.5) * 100 ;
-		int inputLight = analogRead(1);
-		float voltageLight = inputLight * 5.0;
-		voltageLight /= 1024;
-		float rldr = (10*voltageLight)/(5-voltageLight);
-		float lux = 500/rldr;
-		
-		printf("L %.1f\n", lux);
-		printf("T %.1f\n", temperature);
-		//printf("voltagePoort1 %.1f\n", voltageLight);
-	
-	
-=======
-		float temperature = read_temp(analogRead(0));
-		float lux = analogRead(1);
-		
-		printf("L %.1f\n", lux);
-		printf("T %.1f\n", temperature);
-		
+		float temperature = get_temp(analogRead(0));
+		float lux = get_lux(analogRead(1));
+				
 		if((temperature > rollout_temp) || (lux > rollout_light)){
 			PORTD = 0xFF;
 		}
 		else{
 			PORTD = 0x00;
 		}
-		
->>>>>>> refs/remotes/origin/Jesse
-		_delay_ms(3000);
+		//_delay_ms(3000);
 	}
 }
