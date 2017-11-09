@@ -345,17 +345,17 @@ int main(void)
 	//_delay_ms(1000);
 	while (1) {
 		
-		DDRD = 0xFF;
+		DDRB = 0xFF;
 		SCH_Dispatch_Tasks();
 		
 		float temperature = get_temp(analogRead(0));
 		float lux = get_lux(analogRead(1));
 				
 		if((temperature > rollout_temp) || (lux > rollout_light)){
-			PORTD = 0xFF;
+			PORTB = 0xFF;
 		}
 		else{
-			PORTD = 0x00;
+			PORTB = 0x00;
 		}
 		//_delay_ms(3000);
 	}
