@@ -348,6 +348,11 @@ void rollin(){
 	PORTB = 0x00;
 }
 
+void set_rollout_temp(float newTemp){
+	rollout_temp = newTemp;
+}
+	
+
 int main(void)
 {
 	DDRB = 0xFF;
