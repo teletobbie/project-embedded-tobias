@@ -11,11 +11,6 @@
 #include "AVR_TTC_scheduler.h"
 #include <avr/interrupt.h>
 
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-// output on USB = PD1 = board pin 1
-// datasheet p.190; F_OSC = 16 MHz & baud rate = 19.200
-#define UBBRVAL 51
-
 
 
 // The array of tasks
@@ -271,12 +266,6 @@ int uart_readchar(FILE *stream) {
 }
 void init_analogRead()
 {
-
-
-	// set the analog reference (high two bits of ADMUX) and select the
-	// channel (low 4 bits).  this also sets ADLAR (left-adjust result)
-	// to 0 (the default).
-	//OPZOEKEN ADMUX!!!
 	ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)| (1 << ADEN); // 128 prescale for 16Mhz & enable adc
 }
 uint16_t analogRead(uint8_t pin)
@@ -284,7 +273,6 @@ uint16_t analogRead(uint8_t pin)
 	
 	_delay_ms(10);
 
-	uint8_t low, high;
 	if (pin >= 14) pin -= 14; // allow for channel or pin numbersuint8_t low, high;
 	
 	ADMUX = (1 << REFS0) | (pin & 0x07);
@@ -294,17 +282,7 @@ uint16_t analogRead(uint8_t pin)
 	
 	// ADSC is cleared when the conversion finishes
 	while (bit_is_set(ADCSRA, ADSC));
-
-	// we have to read ADCL first; doing so locks both ADCL
-	// and ADCH until ADCH is read.  reading ADCL second would
-	// cause the results of each conversion to be discarded,
-	// as ADCL and ADCH would be locked when it completed.
-	// combine the two bytes
 	
-	low  = ADCL;
-	high = ADCH;
-	
-	//return (high << 8) | low;
 	return ADC;
 }
 float send_temp(void){
