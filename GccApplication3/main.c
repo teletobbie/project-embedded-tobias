@@ -90,6 +90,7 @@ uint16_t analogRead(uint8_t pin)
 	// cause the results of each conversion to be discarded,
 	// as ADCL and ADCH would be locked when it completed.
 	// combine the two bytes
+	
 	low  = ADCL;
 	high = ADCH;
 	
@@ -99,6 +100,10 @@ uint16_t analogRead(uint8_t pin)
 
 int main(void)
 {
+	
+	float rollout_temp = 21.5;
+	float rollout_light = 500;
+	
 	uart_init();
 	stdout = &uart_output;
 	stdin  = &uart_input;
@@ -127,11 +132,7 @@ int main(void)
 		//printf("voltagePoort1 %.1f\n", voltageLight);
 		
 		
-		
-		if(lux > 500.0){
-			PORTD = 0xFF;
-		}
-		else if(temperature > 21.0){
+		if(temperature > rollout_temp || lux > rollout_light){
 			PORTD = 0xFF;
 		}
 		else{
