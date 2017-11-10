@@ -9,9 +9,7 @@ import serial
 import np
 import matplotlib.pyplot as plt
 from drawnow import *
-<<<<<<< HEAD
 from matplotlib.widgets import Button
-=======
 """
 box = dict(facecolor='yellow', pad=5, alpha=0.2)
 
@@ -48,14 +46,14 @@ ax4.yaxis.set_label_coords(labelx, 0.5)
 
 plt.show()
 """
->>>>>>> master
+
 
 lux_values = []
 temp_values = []
 current_temp = 20
 plt.ion()
 
-<<<<<<< HEAD
+
 serialArduino = serial.Serial('COM5', 19200)
 
 class Index(object):
@@ -78,7 +76,7 @@ def plotValues():
     plt.subplot(212)
     plt.subplot(212).set_xlabel('Temperatuur in °C')
     plt.plot(temp_values, 'rx-', label='values')
-<<<<<<< HEAD
+
     plt.subplots_adjust(hspace=.5)
     axButtonMin = plt.axes([0.7, 0.01, 0.1, 0.050])
     axButtonMax = plt.axes([0.88, 0.01, 0.1, 0.050])
@@ -108,9 +106,9 @@ def read(valueRead):
 def write(message):
     serial.write(bytes(message))
 
-=======
+
     plt.show()
-=======
+
 serialArdef plotValues():
     plt.title('Serial value from Arduino')
     plt.grid(True)

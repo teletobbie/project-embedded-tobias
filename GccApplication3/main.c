@@ -13,6 +13,7 @@
 
 static	float rollout_temp = 21.5;
 static	float rollout_light = 500;
+static uint8_t manual_rollout =0;
 
 // The array of tasks
 sTask SCH_tasks_G[SCH_MAX_TASKS];
@@ -373,12 +374,17 @@ void check_rollout()
 {
 	float temperature = get_temp(analogRead(0));
 	float lux = get_lux(analogRead(1));
-	if((temperature > rollout_temp) || (lux > rollout_light)){
-		PORTB = 0xFF;
+	if (manual_rollout !=0){
+			if((temperature > rollout_temp) || (lux > rollout_light)){
+				PORTB = 0xFF;
+			}
+			else{
+				PORTB = 0x00;
+			}			
+			
 	}
-	else{
-		PORTB = 0x00;
-	}
+
+
 }
 void rollout(){
 	PORTB = 0xFF;
@@ -422,9 +428,9 @@ int main(void)
 		
 		float temperature = get_temp(analogRead(0));
 		float lux = get_lux(analogRead(1));
-		uint8_t recieve_data = recieve();
+		uint8_t manual_rollout = recieve();
 		
-		if(recieve_data > 1) {
+		if(manual_rollout > 0) {
 			rollout();
 			printf("rollout");
 		}
@@ -434,12 +440,9 @@ int main(void)
 		}
 		
 		//_delay_ms(3000);
-<<<<<<< HEAD
 
 		SCH_Dispatch_Tasks();		
 
-=======
->>>>>>> master
 	}
 }
 
