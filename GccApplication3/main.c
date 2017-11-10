@@ -318,12 +318,12 @@ void get_distance()
 {
 	trigger_ultrasoon();
 	
-	printf("counter %u \n", gv_counter);
+	uint16_t distance = gv_counter*0.5;
+	distance /=58;
 	
-	uint16_t distance = (gv_counter*0.5)/58;
-
-	printf("distance %ucm \n", distance);
-}
+	printf("counter %u \n", gv_counter);
+	printf("distance %u cm \n", distance);
+} 
 
 
 
