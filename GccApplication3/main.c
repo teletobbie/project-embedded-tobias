@@ -300,7 +300,7 @@ void init_ext_int()
 
 void init_ultrasoon(void)
 {
-	DDRD |= _BV(DDB0);
+	DDRD |= _BV(DDB6);
 	DDRD &= ~_BV(DDB3);
 	
 	init_timer();
@@ -309,9 +309,9 @@ void init_ultrasoon(void)
 
 void trigger_ultrasoon(void)
 {
-	PORTD|=(1<<PIND0);
+	PORTD|=(1<<PIND6);
 	_delay_ms(10);
-	PORTD &= ~(1<<PIND0);
+	PORTD &= ~(1<<PIND6);
 }
 
 void get_distance()
@@ -434,9 +434,12 @@ int main(void)
 		}
 		
 		//_delay_ms(3000);
+<<<<<<< HEAD
 
 		SCH_Dispatch_Tasks();		
 
+=======
+>>>>>>> master
 	}
 }
 
