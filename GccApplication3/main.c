@@ -20,6 +20,13 @@ sTask SCH_tasks_G[SCH_MAX_TASKS];
 volatile uint16_t gv_counter = 0; // 16 bit counter value
 volatile uint8_t gv_echo = 0; // a flag
 
+volatile float avgTemperature;
+volatile int cTemperature=1;
+
+volatile float avgLux;
+volatile int cLux=1;
+
+
 
 /*------------------------------------------------------------------*-
 
@@ -314,7 +321,7 @@ void trigger_ultrasoon(void)
 	PORTD &= ~(1<<PIND6);
 }
 
-void get_distance()
+uint16_t get_distance()
 {
 	trigger_ultrasoon();
 	
@@ -323,38 +330,15 @@ void get_distance()
 		uint16_t distance = gv_counter*0.5;
 		distance /=58;
 	
-		printf("counter %u \n", gv_counter);
-		printf("distance %u cm \n", distance);
+		return distance;
 	}
 	else
 	{
-		printf("error out of range");
+		uint16_t distance = 400;
+		return distance;
 	}
 } 
 
-
-
-float send_temp(void){
-		int input = analogRead(0);
-		float voltage = input * 5.0;
-		voltage /= 1024;
-			
-		float temperature;
-		temperature = (voltage - 0.5) * 100 ;
-		printf("T %.1f\n", temperature);
-}
-float send_lux(void){
-	
-	int input = analogRead(1);
-	
-	float voltageLight = input * 5.0;
-	voltageLight /= 1024;
-	
-	float rldr = (10*voltageLight)/(5-voltageLight);
-	float lux = 500/rldr;
-	printf("L %.1f\n", lux);
-	
-}
 float get_lux(int in){
 		int input = in;
 		
@@ -376,11 +360,12 @@ float get_temp(int in){
 			return temperature;
 }
 
+
+
 void check_rollout()
 {
-	float temperature = get_temp(analogRead(0));
-	float lux = get_lux(analogRead(1));
-	if((temperature > rollout_temp) || (lux > rollout_light)){
+
+	if((avgTemperature > rollout_temp) || (avgLux > rollout_light)){
 		PORTB = 0xFF;
 	}
 	else{
@@ -392,6 +377,65 @@ void rollout(){
 }
 void rollin(){
 	PORTB = 0x00;
+}
+
+void calculateAvgTemperature()
+{
+	if (cTemperature==3)
+	{
+		avgTemperature += get_temp(analogRead(0));
+		avgTemperature /= cTemperature;
+		cTemperature=1;
+	}
+	if (cTemperature !=1 && cTemperature !=3)
+	{
+		avgTemperature += get_temp(analogRead(0));
+		avgTemperature /= cTemperature;
+		++cTemperature;
+
+	}
+	
+	if (cTemperature==1)
+	{
+		avgTemperature = get_temp(analogRead(0));
+		++cTemperature;
+		
+	}
+	
+
+}
+
+void calculateAvgLux()
+{
+
+	if (cLux==4)
+	{
+		avgLux += get_lux(analogRead(1));
+		avgLux /= cLux;
+		cLux=1;
+	}
+	if (cLux !=1 && cLux !=4)
+	{
+		avgLux += get_lux(analogRead(1));
+		avgLux /= cLux;
+		cLux++;
+		
+	}
+
+	if (cLux==1)
+	{
+		avgLux = get_lux(analogRead(1));
+		cLux++;
+	}
+}
+
+void sendStatus()
+{
+	uint16_t distance = get_distance();
+	
+	printf("T %.1f \n", avgTemperature);
+	printf("L %.0f \n", avgLux);
+	printf("D %u \n", distance);
 }
 
 int main(void)
@@ -407,31 +451,17 @@ int main(void)
 	init_analogRead();
 	SCH_Init_T2();
 	
-	SCH_Add_Task(send_lux, 1000, 10000);
-	SCH_Add_Task(send_temp, 1000, 5000);
+	SCH_Add_Task(calculateAvgTemperature, 0, 4000);
+	SCH_Add_Task(calculateAvgLux, 0, 3000);
+	SCH_Add_Task(check_rollout, 0, 12000);
+	SCH_Add_Task(sendStatus, 0, 6000);
 
-	SCH_Add_Task(get_distance, 1000, 5000);
-
-	SCH_Add_Task(check_rollout, 1000, 1000);
 
 	SCH_Start();
 	
-	while (1) {
-		
-		//DDRD = 0xFF;
-		SCH_Dispatch_Tasks();
-		
-		float temperature = get_temp(analogRead(0));
-		float lux = get_lux(analogRead(1));
-				
-		if((temperature > rollout_temp) || (lux > rollout_light)){
-			//PORTD = 0xFF;
-		}
-		
-		else{
-			//PORTD = 0x00;
-		}
-		//_delay_ms(3000);
+	while (1)
+	{
+		SCH_Dispatch_Tasks();		
 	}
 }
 
