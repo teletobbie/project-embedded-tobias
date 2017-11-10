@@ -285,8 +285,6 @@ uint16_t analogRead(uint8_t pin)
 	return ADC;
 }
 
-
-<<<<<<< HEAD
 void init_timer()
 {
 	TCCR1A = 0;
@@ -302,7 +300,7 @@ void init_ext_int()
 
 void init_ultrasoon(void)
 {
-	DDRD |= _BV(DDB0);
+	DDRD |= _BV(DDB6);
 	DDRD &= ~_BV(DDB3);
 	
 	init_timer();
@@ -311,9 +309,9 @@ void init_ultrasoon(void)
 
 void trigger_ultrasoon(void)
 {
-	PORTD|=(1<<PIND0);
+	PORTD|=(1<<PIND6);
 	_delay_ms(10);
-	PORTD &= ~(1<<PIND0);
+	PORTD &= ~(1<<PIND6);
 }
 
 void get_distance()
@@ -329,8 +327,6 @@ void get_distance()
 
 
 
-=======
->>>>>>> origin/master
 float send_temp(void){
 		int input = analogRead(0);
 		float voltage = input * 5.0;
@@ -406,15 +402,14 @@ int main(void)
 	
 	SCH_Add_Task(send_lux, 1000, 10000);
 	SCH_Add_Task(send_temp, 1000, 5000);
-<<<<<<< HEAD
+
 	SCH_Add_Task(get_distance, 1000, 5000);
-=======
+
 	SCH_Add_Task(check_rollout, 1000, 1000);
->>>>>>> origin/master
+
 	SCH_Start();
 	
 	while (1) {
-<<<<<<< HEAD
 		
 		//DDRD = 0xFF;
 		SCH_Dispatch_Tasks();
@@ -430,9 +425,6 @@ int main(void)
 			//PORTD = 0x00;
 		}
 		//_delay_ms(3000);
-=======
-		SCH_Dispatch_Tasks();		
->>>>>>> origin/master
 	}
 }
 
