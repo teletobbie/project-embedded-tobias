@@ -426,9 +426,11 @@ int main(void)
 		
 		if(recieve_data > 1) {
 			rollout();
+			printf("rollout");
 		}
 		else{
 			rollin();
+			printf("rollin");
 		}
 		
 		//_delay_ms(3000);
