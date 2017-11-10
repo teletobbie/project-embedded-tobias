@@ -6,15 +6,56 @@
 
 #https://arduino-er.blogspot.nl/2015/04/python-to-plot-graph-of-serial-data.html
 import serial
+import np
 import matplotlib.pyplot as plt
 from drawnow import *
+<<<<<<< HEAD
 from matplotlib.widgets import Button
+=======
+"""
+box = dict(facecolor='yellow', pad=5, alpha=0.2)
+
+fig = plt.figure()
+fig.subplots_adjust(left=0.2, wspace=0.6)
+
+# Fixing random state for reproducibility
+np.random.seed(19645801)
+
+ax1 = fig.add_subplot(221)
+ax1.plot(2000*np.random.rand(10))
+ax1.set_title('ylabels not aligned')
+ax1.set_ylabel('misaligned 1', bbox=box)
+ax1.set_ylim(0, 2000)
+ax3 = fig.add_subplot(223)
+ax3.set_ylabel('misaligned 2',bbox=box)
+ax3.plot(np.random.rand(10))
+
+
+labelx = -0.3  # axes coords
+
+ax2 = fig.add_subplot(222)
+ax2.set_title('ylabels aligned')
+ax2.plot(2000*np.random.rand(10))
+ax2.set_ylabel('aligned 1', bbox=box)
+ax2.yaxis.set_label_coords(labelx, 0.5)
+ax2.set_ylim(0, 2000)
+
+ax4 = fig.add_subplot(224)
+ax4.plot(np.random.rand(10))
+ax4.set_ylabel('aligned 2', bbox=box)
+ax4.yaxis.set_label_coords(labelx, 0.5)
+
+
+plt.show()
+"""
+>>>>>>> master
 
 lux_values = []
 temp_values = []
 current_temp = 20
 plt.ion()
 
+<<<<<<< HEAD
 serialArduino = serial.Serial('COM5', 19200)
 
 class Index(object):
@@ -37,6 +78,7 @@ def plotValues():
     plt.subplot(212)
     plt.subplot(212).set_xlabel('Temperatuur in °C')
     plt.plot(temp_values, 'rx-', label='values')
+<<<<<<< HEAD
     plt.subplots_adjust(hspace=.5)
     axButtonMin = plt.axes([0.7, 0.01, 0.1, 0.050])
     axButtonMax = plt.axes([0.88, 0.01, 0.1, 0.050])
@@ -66,6 +108,20 @@ def read(valueRead):
 def write(message):
     serial.write(bytes(message))
 
+=======
+    plt.show()
+=======
+serialArdef plotValues():
+    plt.title('Serial value from Arduino')
+    plt.grid(True)
+    plt.ylabel('Values')
+    plt.plot(values, 'rx-', label='values')
+    plt.legend(loc='upper right')duino = serial.Serial('COM5', 19200)
+
+
+
+>>>>>>> refs/remotes/origin/Jesse
+>>>>>>> master
 
 # pre-load dummy data
 for i in range(0, 26):
