@@ -232,7 +232,7 @@ void uart_init()
 	UBRR0H = UBRRH_VALUE; //UBRR0H = Baud Rate registers for HIGH (msb)
 	UBRR0L = UBRRL_VALUE;// Baud Rate register for LOW (lsb) set to UBBRVAL = 51
 	// disable U2X mode
-	//UCSR0A = 0; //contains status data
+	UCSR0A = 0; //contains status data
 	// set frame format : asynchronous, 8 data bits, 1 stop bit, no parity
 	UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
 	// enable transmitter by setting the UCsZ02 bit
@@ -285,8 +285,6 @@ uint16_t analogRead(uint8_t pin)
 	return ADC;
 }
 
-
-<<<<<<< HEAD
 void init_timer()
 {
 	TCCR1A = 0;
@@ -329,8 +327,6 @@ void get_distance()
 
 
 
-=======
->>>>>>> origin/master
 float send_temp(void){
 		int input = analogRead(0);
 		float voltage = input * 5.0;
@@ -391,6 +387,12 @@ void rollin(){
 	PORTB = 0x00;
 }
 
+uint8_t recieve() 
+{
+	loop_until_bit_is_set(UCSR0A, RXC0);
+	return UDR0;
+}
+
 int main(void)
 {
 	DDRB = 0xFF;
@@ -406,33 +408,33 @@ int main(void)
 	
 	SCH_Add_Task(send_lux, 1000, 10000);
 	SCH_Add_Task(send_temp, 1000, 5000);
-<<<<<<< HEAD
+
 	SCH_Add_Task(get_distance, 1000, 5000);
-=======
+
 	SCH_Add_Task(check_rollout, 1000, 1000);
->>>>>>> origin/master
+
 	SCH_Start();
-	
+
 	while (1) {
-<<<<<<< HEAD
 		
 		//DDRD = 0xFF;
 		SCH_Dispatch_Tasks();
 		
 		float temperature = get_temp(analogRead(0));
 		float lux = get_lux(analogRead(1));
-				
-		if((temperature > rollout_temp) || (lux > rollout_light)){
-			//PORTD = 0xFF;
+		uint8_t recieve_data = recieve();
+		
+		if(recieve_data > 1) {
+			rollout();
+		}
+		else{
+			rollin();
 		}
 		
-		else{
-			//PORTD = 0x00;
-		}
 		//_delay_ms(3000);
-=======
+
 		SCH_Dispatch_Tasks();		
->>>>>>> origin/master
+
 	}
 }
 
