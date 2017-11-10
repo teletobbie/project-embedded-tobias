@@ -46,17 +46,7 @@ def plotValues():
     buttonMax.on_clicked(callback.max)
     plt.gcf().text(0.83, 0.025, str(callback.getTemp), fontsize=10)
 
-# pre-load dummy data
-for i in range(0, 26):
-    lux_values.append(0)
-    temp_values.append(0)
-
-while True:
-    while (serialArduino.inWaiting() == 0):
-        pass
-    print("readline()")
-    valueRead = serialArduino.readline()
-    # check if valid value can be casted
+def read(valueRead):
     try:
         valueRead = valueRead.split()
         if 'L' in valueRead[0].decode("utf-8"):
@@ -72,3 +62,20 @@ while True:
         drawnow(plotValues)
     except ValueError:
         print("Invalid! cannot cast")
+
+def write(message):
+    serial.write(bytes(message))
+
+
+# pre-load dummy data
+for i in range(0, 26):
+    lux_values.append(0)
+    temp_values.append(0)
+
+while True:
+    while (serialArduino.inWaiting() == 0):
+        pass
+    print("readline()")
+    valueRead = serialArduino.readline()
+    read(valueRead)
+
