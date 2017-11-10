@@ -318,11 +318,18 @@ void get_distance()
 {
 	trigger_ultrasoon();
 	
-	uint16_t distance = gv_counter*0.5;
-	distance /=58;
+	if (gv_counter <= 46400){
+		
+		uint16_t distance = gv_counter*0.5;
+		distance /=58;
 	
-	printf("counter %u \n", gv_counter);
-	printf("distance %u cm \n", distance);
+		printf("counter %u \n", gv_counter);
+		printf("distance %u cm \n", distance);
+	}
+	else
+	{
+		printf("error out of range");
+	}
 } 
 
 
