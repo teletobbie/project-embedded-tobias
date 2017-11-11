@@ -366,7 +366,7 @@ void init_timerPWM()
 {
 		// Phase Correct PWM 8 Bit, Clear OCA0 on Compare Match
 		// Set on TOP
-		TCCR0A = (1 << WGM00) | (1 << COM0A1);
+		TCCR0A |= (1 << WGM00);
 		// init PWM value
 		OCR0A = 0;
 }
@@ -376,6 +376,7 @@ void rollout(){
 	int increase = 5;
 	PORTB &= ~(1<<PINB1);
 	PORTB|=(1<<PINB0);
+	TCCR0A |= (1 << COM0A1);
 	TCCR0B = (1 << CS01) | (1 << CS00);
 	while (get_distance() < rolloutDistance)
 	{
@@ -387,9 +388,9 @@ void rollout(){
 			increase = -increase;
 		}
 	}
+	TCCR0A &= ~(1 << COM0A1);
 	TCCR0B = 0;
 	TCNT0 = 0;
-	OCR0A = 0;
 	rolloutFlag = 1;
 	
 }
@@ -400,6 +401,7 @@ void rollin()
 	int increase = 5;
 	PORTB &= ~(1<<PINB0);
 	PORTB|=(1<<PINB1);
+	TCCR0A |= (1 << COM0A1);
 	TCCR0B = (1 << CS01) | (1 << CS00);
 	while (get_distance() > 5)
 	{
@@ -411,9 +413,9 @@ void rollin()
 			increase = -increase;
 		}
 	}
+	TCCR0A &= ~(1 << COM0A1);
 	TCCR0B = 0;
 	TCNT0 = 0;
-	OCR0A = 0;
 	rolloutFlag = 0;
 }
 
