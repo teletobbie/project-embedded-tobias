@@ -14,6 +14,9 @@
 static	float rollout_temp = 21.5;
 static	float rollout_light = 500;
 
+int rolloutDistance = 160;
+uint8_t rolloutFlag = 0;
+
 // The array of tasks
 sTask SCH_tasks_G[SCH_MAX_TASKS];
 
@@ -283,7 +286,6 @@ uint16_t analogRead(uint8_t pin)
 	
 	ADMUX = (1 << REFS0) | (pin & 0x07);
 	// start the conversion
-	//sbi(ADCSRA, ADSC);
 	ADCSRA |= (1<<ADSC);
 	
 	// ADSC is cleared when the conversion finishes
@@ -292,7 +294,7 @@ uint16_t analogRead(uint8_t pin)
 	return ADC;
 }
 
-void init_timer()
+void init_timerUltrasoon()
 {
 	TCCR1A = 0;
 	TCCR1B = 0;
@@ -307,18 +309,18 @@ void init_ext_int()
 
 void init_ultrasoon(void)
 {
-	DDRD |= _BV(DDB6);
-	DDRD &= ~_BV(DDB3);
+	DDRD |= _BV(DDB4); // set port D4 as output
+	DDRD &= ~_BV(DDB3); // set port D3 as input
 	
-	init_timer();
+	init_timerUltrasoon();
 	init_ext_int();
 }
 
 void trigger_ultrasoon(void)
 {
-	PORTD|=(1<<PIND6);
+	PORTD|=(1<<PIND4);
 	_delay_ms(10);
-	PORTD &= ~(1<<PIND6);
+	PORTD &= ~(1<<PIND4);
 }
 
 uint16_t get_distance()
@@ -360,24 +362,113 @@ float get_temp(int in){
 			return temperature;
 }
 
+void init_timerPWM()
+{
+		// Phase Correct PWM 8 Bit, Clear OCA0 on Compare Match
+		// Set on TOP
+		TCCR0A = (1 << WGM00) | (1 << COM0A1);
+		// init PWM value
+		OCR0A = 0;
+}
+
+void rollout(){
+	uint8_t pwm = 0;
+	int increase = 5;
+	PORTB &= ~(1<<PINB1);
+	PORTB|=(1<<PINB0);
+	TCCR0B = (1 << CS01) | (1 << CS00);
+	while (get_distance() < rolloutDistance)
+	{
+		pwm += increase;
+		OCR0A = pwm;
+			
+		if (pwm == 0 || pwm == 255)
+		{
+			increase = -increase;
+		}
+	}
+	TCCR0B = 0;
+	TCNT0 = 0;
+	OCR0A = 0;
+	rolloutFlag = 1;
+	
+}
+
+void rollin()
+{
+	uint8_t pwm = 0;
+	int increase = 5;
+	PORTB &= ~(1<<PINB0);
+	PORTB|=(1<<PINB1);
+	TCCR0B = (1 << CS01) | (1 << CS00);
+	while (get_distance() > 5)
+	{
+		pwm += increase;
+		OCR0A = pwm;
+		
+		if (pwm == 0 || pwm == 255)
+		{
+			increase = -increase;
+		}
+	}
+	TCCR0B = 0;
+	TCNT0 = 0;
+	OCR0A = 0;
+	rolloutFlag = 0;
+}
+
+void init_rollout()
+{
+	DDRB = 0xFF; // set all B ports as output
+	DDRD |= _BV(DDB6); // Set port d6 as output (OC0A)
+	init_timerPWM();
+	
+	if(avgTemperature >= rollout_temp || avgLux >= rollout_light)
+	{
+		if (get_distance() < rolloutDistance)
+		{
+			rollout();
+		}
+		else
+		{
+			PORTB &= ~(1<<PINB1);
+			PORTB|=(1<<PINB0);
+		}
+	}
+	if(avgTemperature < rollout_temp && avgLux < rollout_light)
+	{
+		if 	(get_distance() > 6)
+		{
+			rollin();
+		}
+		else
+		{
+			PORTB &= ~(1<<PINB0);
+			PORTB|=(1<<PINB1);
+		}
+	}
+}
 
 
 void check_rollout()
 {
 
-	if((avgTemperature > rollout_temp) || (avgLux > rollout_light)){
-		PORTB = 0xFF;
+	if(avgTemperature >= rollout_temp || avgLux >= rollout_light)
+	{
+		if (rolloutFlag == 0)
+			{
+				rollout();
+			}
 	}
-	else{
-		PORTB = 0x00;
+	if(avgTemperature < rollout_temp && avgLux < rollout_light)
+	{
+		if 	(rolloutFlag == 1)
+		{
+			rollin();
+		}
 	}
 }
-void rollout(){
-	PORTB = 0xFF;
-}
-void rollin(){
-	PORTB = 0x00;
-}
+
 
 void calculateAvgTemperature()
 {
@@ -445,11 +536,16 @@ int main(void)
 	uart_init();
 	stdout = &uart_output;
 	stdin  = &uart_input;
-
-	init_ultrasoon();
 	
-	init_analogRead();
+
+	
 	SCH_Init_T2();
+	
+	init_ultrasoon();
+		
+	init_analogRead();
+	
+	init_rollout();
 	
 	SCH_Add_Task(calculateAvgTemperature, 0, 4000);
 	SCH_Add_Task(calculateAvgLux, 0, 3000);
