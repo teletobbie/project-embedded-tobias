@@ -13,8 +13,10 @@
 
 static	float rollout_temp = 21.5;
 static	float rollout_light = 500;
+volatile char ReceivedChar [100];
+volatile int iChar = 0;
 
-int rolloutDistance = 160;
+volatile uint16_t rolloutDistance;
 uint8_t rolloutFlag = 0;
 
 // The array of tasks
@@ -246,19 +248,15 @@ void uart_init()
 	// set frame format : asynchronous, 8 data bits, 1 stop bit, no parity
 	UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
 	// enable transmitter by setting the UCsZ02 bit
-	UCSR0B = _BV(RXEN0) | _BV(TXEN0); //TXEN0
+	UCSR0B = _BV(RXEN0) | _BV(TXEN0)| _BV(RXCIE0); //TXEN0
 
 	
 	
 }
 
 static int uart_sendchar(char letter, FILE *stream);
-static int uart_readchar(FILE *stream);
 
 FILE uart_output = FDEV_SETUP_STREAM(uart_sendchar, NULL, _FDEV_SETUP_WRITE);
-FILE uart_input = FDEV_SETUP_STREAM(NULL, uart_readchar, _FDEV_SETUP_READ);
-
-FILE uart_io = FDEV_SETUP_STREAM(uart_sendchar, uart_readchar, _FDEV_SETUP_RW);
 
 int uart_sendchar(char letter, FILE *stream) {
 	if (letter == '\n') {
@@ -529,6 +527,29 @@ void sendStatus()
 	printf("T %.1f \n", avgTemperature);
 	printf("L %.0f \n", avgLux);
 	printf("D %u \n", distance);
+	printf("is %u\n", rolloutDistance);
+}
+
+void readserial()
+{	
+	
+	if (ReceivedChar[0] != '\0')
+	{
+		char message[(strlen(ReceivedChar))];
+		strcpy(message, ReceivedChar);
+		ReceivedChar[0] = '\0';
+		if (message[0] == 'D')
+		{	
+			char text[20];
+			uint16_t waarde;
+			sscanf(message, "%s %u", text, &waarde);
+			rolloutDistance = waarde;
+			printf("%u\n", rolloutDistance);
+		
+			_delay_ms(3);
+		}
+	}
+	
 }
 
 int main(void)
@@ -537,7 +558,6 @@ int main(void)
 	
 	uart_init();
 	stdout = &uart_output;
-	stdin  = &uart_input;
 	
 
 	
@@ -549,11 +569,13 @@ int main(void)
 	
 	init_rollout();
 	
+	//SCH_Add_Task(readserial, 0, 1000);
+	SCH_Add_Task(readserial,0 , 300);
 	SCH_Add_Task(calculateAvgTemperature, 0, 4000);
 	SCH_Add_Task(calculateAvgLux, 0, 3000);
 	SCH_Add_Task(check_rollout, 0, 12000);
 	SCH_Add_Task(sendStatus, 0, 6000);
-
+	
 
 	SCH_Start();
 	
@@ -576,5 +598,15 @@ ISR(INT1_vect)
 	{
 		TCCR1B|=(1<<CS11);
 		gv_echo=1;
+	}
+}
+
+ISR(USART_RX_vect)
+{
+	ReceivedChar[iChar] = UDR0;
+	if (ReceivedChar[iChar++]=='\r')
+	{
+		ReceivedChar[iChar-1]=0x00;
+		iChar=0;
 	}
 }

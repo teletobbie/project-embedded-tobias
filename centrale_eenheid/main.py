@@ -18,10 +18,7 @@ class adrinoSerial:
 
 
     def handshake(self):
-        self.ser.write(b'hello')
-        while 1:
-            if self.ser.readline():
-                break
+        self.ser.write('hello')
 
     #def
 
@@ -101,7 +98,7 @@ class userInterface:
         if self.adrinoConnection.ser.inWaiting == 0:
             return None
         self.valueRead = self.adrinoConnection.ser.readline().rstrip().decode("utf-8")
-        #print (self.valueRead)
+        print (self.valueRead)
         if 'T' in self.valueRead:
             self.tem.set(self.valueRead[1:])
         if 'L' in self.valueRead:
@@ -112,7 +109,14 @@ class userInterface:
 
     def writeDistance(self):
         self.writeDis = int(str(self.openDistance.get()))
-        print(self.writeDis)
+
+        #print(self.writeDis)
+        self.writeString = str('D '+str(self.writeDis)+'\r').encode("utf-8")
+        self.adrinoConnection.ser.write(self.writeString)
+        #self.adrinoConnection.ser.write(self.writeDis)
+        #self.adrinoConnection.ser.write('\r'.encode('ascii'))
+
+
 
 
 centrale = adrinoTerminal()
